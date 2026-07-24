@@ -1,0 +1,31 @@
+# SQL Injection Vulnerability Allowing Login Bypass
+
+**Source:** PortSwigger Web Security Academy
+**Category:** SQL Injection / Auth Bypass
+**Difficulty:** Apprentice
+**Date:** 2026-07-24
+
+## Objective
+Log in as the administrator user without knowing the password, using a SQL injection payload in the login form.
+
+## Recon / Initial Testing
+Submitted a normal username/password to see baseline behavior, then tested injecting SQL syntax into the username field.
+
+## The Vulnerability
+The login query likely looks like `SELECT * FROM users WHERE username = 'X' AND password = 'Y'`, with both fields inserted directly into the query unsanitized.
+
+## Exploitation Steps
+1. Payload used: `administrator'--`
+2. Entered into the username field, left password field with any value (or blank).
+3. The `--` comments out the rest of the query, including the password check.
+4. Query effectively becomes `WHERE username = 'administrator'`, no password validation applied.
+5. Logged in as administrator.
+
+## Why It Worked
+Commenting out the password comparison entirely bypasses authentication — the query only checks that the username matches, ignoring password validation.
+
+## Fix / Mitigation
+Parameterized queries prevent the comment syntax from being interpreted as SQL at all — it would just be treated as a literal string in the username.
+
+## Notes for Next Time
+Auth bypass via comment-out is a distinct pattern from the `OR 1=1` trick — worth keeping separate in memory: one returns extra rows, the other skips a check entirely.
